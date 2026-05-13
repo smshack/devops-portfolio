@@ -22,7 +22,7 @@ services:
 
       KC_PROXY_HEADERS: xforwarded
 
-      KC_HOSTNAME: keycloak.smartseo.kr
+      KC_HOSTNAME: keycloak.smartseoapp.com
       KC_HTTP_ENABLED: true
 
     ports:
