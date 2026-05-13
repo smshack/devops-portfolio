@@ -10,8 +10,8 @@ services:
 
     volumes:
       # nginx 설정
-      - /storage/docker-storage/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /storage/docker-storage/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./setting/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./setting/conf.d:/etc/nginx/conf.d:ro
 
       # 정적 파일
       - /storage/docker-storage/nginx/html:/usr/share/nginx/html
