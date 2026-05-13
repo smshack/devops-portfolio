@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: keycloak
+    restart: unless-stopped
+
+    command:
+      - start
+
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloakpassword
+
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: adminpassword
+
+      KC_PROXY_HEADERS: xforwarded
+
+      KC_HOSTNAME: keycloak.smartseo.kr
+      KC_HTTP_ENABLED: true
+
+    ports:
+      - "8084:8080"
+
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+
+    networks:
+      - services
+
+volumes:
+  keycloak_data:
+    name: keycloak_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/keycloak/data
+
+networks:
+  services:
+    external: true
