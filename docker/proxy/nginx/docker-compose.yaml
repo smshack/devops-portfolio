@@ -14,7 +14,7 @@ services:
       - ./setting/conf.d:/etc/nginx/conf.d:ro
 
       # 정적 파일
-      - /storage/docker-storage/nginx/html:/usr/share/nginx/html
+      - ./setting/nginx/html:/usr/share/nginx/html
 
       # certbot 인증서
       - /storage/docker-storage/certbot/conf:/etc/letsencrypt
