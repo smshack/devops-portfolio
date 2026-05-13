@@ -1,0 +1,48 @@
+services:
+  nginx:
+    image: nginx:1.28-alpine
+    container_name: nginx
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      # nginx 설정
+      - /storage/docker-storage/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /storage/docker-storage/nginx/conf.d:/etc/nginx/conf.d:ro
+
+      # 정적 파일
+      - /storage/docker-storage/nginx/html:/usr/share/nginx/html
+
+      # certbot 인증서
+      - /storage/docker-storage/certbot/conf:/etc/letsencrypt
+      - /storage/docker-storage/certbot/www:/var/www/certbot
+
+      # 로그
+      - /storage/docker-storage/nginx/logs:/var/log/nginx
+
+      # 소켓 연결용
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+      # timezone
+      - /etc/localtime:/etc/localtime:ro
+
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+
+    networks:
+      - services
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  services:
+    external: true
