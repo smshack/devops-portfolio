@@ -12,7 +12,7 @@ services:
       # 호스트 포트를 6432로 변경했습니다. (호스트:컨테이너)
       - "6432:5432"
     volumes:
-      - test_postgres_data:/var/lib/postgresql/data
+      - test_postgres_data:/var/lib/postgresql
     networks:
       - services
 
