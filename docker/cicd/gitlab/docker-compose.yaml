@@ -1,0 +1,63 @@
+version: "3.7"
+
+services:
+  web:
+    image: "gitlab/gitlab-ce:latest"
+    container_name: gitlab # 컨테이너 이름을 명시하여 명령어를 편하게 쓸 수 있도록 추가했습니다.
+    restart: always
+    ports:
+      - "8082:80"   # HTTP 포트
+      - "8083:443"  # HTTPS 포트
+      - "9122:9121" # Redis 포트
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.smartseoapp.com'
+        # SMTP 설정 (구글 SMTP 사용)
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "smtp.gmail.com"
+        gitlab_rails['smtp_port'] = 587
+        gitlab_rails['smtp_user_name'] = "myeongseogseo743@gmail.com"
+        gitlab_rails['smtp_password'] = "앱 비밀번호"
+        gitlab_rails['smtp_domain'] = "gmail.com"
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_tls'] = false
+        gitlab_rails['smtp_openssl_verify_mode'] = 'peer'
+    volumes:
+      # 하단 volumes 명세에 선언한 네임드 볼륨과 매핑
+      - gitlab-data:/var/opt/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-config:/etc/gitlab
+    networks:
+      # 이전 PostgreSQL 컨테이너와 동일한 외부 네트워크에 결합
+      - services
+
+volumes:
+  # 호스트 영구 저장소 바인드 마운트 세팅
+  gitlab-data:
+    name: gitlab_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/gitlab/data
+  
+  gitlab-logs:
+    name: gitlab_logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/gitlab/logs
+
+  gitlab-config:
+    name: gitlab_config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/gitlab/config
+
+networks:
+  services:
+    external: true # 미리 생성된 외부 프록시/서비스 네트워크 연동
