@@ -11,20 +11,22 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      # 서비스 영역에서도 다른 볼륨과 충돌하지 않도록 고유 이름을 매핑합니다.
       - test_postgres_data:/var/lib/postgresql/data
-
     networks:
       - services
 
 volumes:
-  postgres_data:
-    name: postgres_data
+  # 하단 명세의 식별자 이름을 test_postgres_data로 통합했습니다.
+  test_postgres_data:
+    name: test_postgres_data # Docker 시스템에 실제 생성되는 볼륨 명칭입니다.
     driver: local
     driver_opts:
       type: none
       o: bind
+      # 기존 데이터 유지를 원하시거나, 새로운 테스트 적재를 위해 기존 경로를 유지합니다.
       device: /storage/docker-storage/test-postgres/data
 
 networks:
   services:
-    external: true # 외부 네트워크 사용
+    external: true
