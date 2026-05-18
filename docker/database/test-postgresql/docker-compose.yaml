@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  postgres:
+  test-postgres:
     image: postgres:latest
     container_name: postgres
     environment:
@@ -11,24 +11,19 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - services
+      - test_postgres_data:/var/lib/postgresql/data
 
-  postgres_exporter:
-    image: wrouesnel/postgres_exporter:latest
-    container_name: postgres-exporter
-    environment:
-      DATA_SOURCE_NAME: postgresql://user:password@postgres:5432/testdb?sslmode=disable
-    ports:
-      - "9187:9187"
-    depends_on:
-      - postgres
     networks:
       - services
 
 volumes:
   postgres_data:
+    name: postgres_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/test-postgres/data
 
 networks:
   services:
