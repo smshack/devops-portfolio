@@ -29,19 +29,8 @@ services:
       # timezone
       - /etc/localtime:/etc/localtime:ro
 
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
-
     networks:
       - services
-
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 networks:
   services:
