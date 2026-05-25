@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  kong:
+    image: kong:3.6
+    container_name: kong
+    restart: unless-stopped
+    hostname: api.smartseoapp.com
+    environment:
+      - KONG_DATABASE=off # 💡 DB-less 모드 활성화 (별도 DB 컨테이너 불필요)
+      - KONG_DECLARATIVE_CONFIG=/etc/kong/kong.yml # 선언적 설정 파일 매핑
+      # ⚙️ 서비스 포트 및 어드민 포트 리슨 설정
+      - KONG_PROXY_LISTEN=0.0.0.0:8000, 0.0.0.0:8443 ssl http2
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - TZ=Asia/Seoul
+    ports:
+      - "8000:8000"   # HTTP 트래픽 수신 포트
+      - "8443:8443"   # HTTPS 트래픽 수신 포트
+      - "8001:8001"   # Admin API 제어 포트 (내부 전용)
+    volumes:
+      # 💡 중요: 라우팅 규칙 및 플러그인을 정의할 설정 파일을 호스트와 공유
+      - ./kong.yml:/etc/kong/kong.yml
+    networks:
+      - services
+
+networks:
+  services:
+    external: true
