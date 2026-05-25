@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  jenkins:
+    # 💡 Docker-in-Docker(디인디)나 호스트 도커 소켓을 빌려 쓰기 위해 최적화된 최신 LTS 이미지
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins
+    restart: unless-stopped
+    hostname: jenkins.smartseoapp.com
+
+    # 💡 도커 기반 빌드 에이전트 구동 및 GitLab 연동 시 발생할 수 있는 타임아웃 방어 설정
+    environment:
+      - TZ=Asia/Seoul
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=true # 초기 비밀번호 가이드를 켭니다.
+
+    # 💡 외부 Nginx 가 8082로 토스하도록 설정 (포트 충돌 방지)
+    # SSH 빌드/에이전트 연결용 포트로 50000 오픈
+    ports:
+      - "8082:8080"
+      - "50000:50000"
+
+    user: root # 💡 Jenkins 내부에서 Docker 명령어(빌드/푸시)를 에러 없이 실행하기 위해 root 권한 부여
+
+    volumes:
+      # Jenkins 전용 영구 데이터 저장 공간 (바인드 마운트)
+      - jenkins_home:/var/jenkins_home
+      
+      # 🛠️ 중요: Jenkins 컨테이너 내부에서 호스트의 Docker 엔진을 제어하여 빌드(docker build)할 수 있도록 소켓 공유
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    # GitLab과 동일하게 공유 네트워크 밴드 내에 안착시켜 내부 IP 통신 보장
+    networks:
+      - services
+
+volumes:
+  jenkins_home:
+    name: jenkins_home
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      # GitLab과 동일한 저장소 격리 규격 매핑
+      device: /storage/docker-storage/jenkins/home
+
+networks:
+  services:
+    external: true
