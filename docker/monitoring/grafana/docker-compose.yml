@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    hostname: grafana.smartseoapp.com
+    ports:
+      - "3000:3000"
+    environment:
+      - TZ=Asia/Seoul
+      # 💡 외부 Nginx 리버스 프록시(HTTPS) 환경에서 Grafana가 올바른 도메인 주소로 리다이렉트하도록 설정
+      - GF_SERVER_ROOT_URL=https://grafana.smartseoapp.com
+      - GF_SECURITY_ADMIN_PASSWORD=grafana_password_change_me # 🔑 초기 어드민 비밀번호
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - services
+
+volumes:
+  grafana_data:
+    name: grafana_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/grafana/data
+
+networks:
+  services:
+    external: true
