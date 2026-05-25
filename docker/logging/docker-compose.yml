@@ -38,8 +38,8 @@ services:
       - /storage/docker-storage/elk/logstash/pipeline:/usr/share/logstash/pipeline
     ports:
       - "5044:5044"   # Beats(Filebeat 등) 수집용 포트
-      - "50000:50000/tcp"
-      - "50000:50000/udp"
+      - "50001:50000/tcp"
+      - "50001:50000/udp"
     networks:
       - services
 
