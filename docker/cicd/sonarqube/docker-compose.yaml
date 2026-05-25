@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  sonarqube-db:
+    image: postgres:15-alpine
+    container_name: sonarqube-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar_password_change_me # 🔑 실전 운영 시 비밀번호를 변경하세요.
+      - POSTGRES_DB=sonar
+      - TZ=Asia/Seoul
+    volumes:
+      - sonarqube_db_data:/var/lib/postgresql/data
+    networks:
+      - services
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    restart: unless-stopped
+    hostname: sonarqube.smartseoapp.com
+    depends_on:
+      - sonarqube-db
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar_password_change_me # 💡 위 DB 비밀번호와 동일하게 맞춤
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonar
+      - TZ=Asia/Seoul
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - services
+
+volumes:
+  sonarqube_db_data:
+    name: sonarqube_db_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/sonarqube/db_data
+
+  sonarqube_data:
+    name: sonarqube_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/sonarqube/data
+
+  sonarqube_extensions:
+    name: sonarqube_extensions
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/sonarqube/extensions
+
+  sonarqube_logs:
+    name: sonarqube_logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/sonarqube/logs
+
+networks:
+  services:
+    external: true
