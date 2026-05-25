@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  mattermost-db:
+    image: postgres:15-alpine
+    container_name: mattermost-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=mmuser
+      - POSTGRES_PASSWORD=mmuser_password_change_me # 🔑 실전 운영 시 비밀번호를 변경하세요.
+      - POSTGRES_DB=mattermost
+      - TZ=Asia/Seoul
+    volumes:
+      - mattermost_db_data:/var/lib/postgresql/data
+    networks:
+      - services
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:latest
+    container_name: mattermost
+    restart: unless-stopped
+    hostname: mattermost.smartseoapp.com
+    depends_on:
+      - mattermost-db
+    ports:
+      - "8065:8065"
+    environment:
+      - MM_USERNAME=mmuser
+      - MM_PASSWORD=mmuser_password_change_me # 💡 위 DB 비밀번호와 동일하게 맞춤
+      - MM_DBNAME=mattermost
+      - MM_SQLSETTINGS_DRIVERNAME=postgres
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mmuser:mmuser_password_change_me@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
+      - TZ=Asia/Seoul
+    volumes:
+      - mattermost_config:/mattermost/config
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+      - mattermost_plugins:/mattermost/plugins
+    networks:
+      - services
+
+volumes:
+  mattermost_db_data:
+    name: mattermost_db_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/mattermost/db_data
+
+  mattermost_config:
+    name: mattermost_config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/mattermost/config
+
+  mattermost_data:
+    name: mattermost_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/mattermost/data
+
+  mattermost_logs:
+    name: mattermost_logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/mattermost/logs
+
+  mattermost_plugins:
+    name: mattermost_plugins
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/mattermost/plugins
+
+networks:
+  services:
+    external: true

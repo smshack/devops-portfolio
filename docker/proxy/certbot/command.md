@@ -47,3 +47,11 @@ docker compose run --rm certbot certonly \
 --email 5432tat@naver.com \
 --agree-tos \
 --no-eff-email
+
+docker compose run --rm certbot certonly \
+--webroot \
+-w /var/www/certbot \
+-d mattermost.smartseoapp.com \
+--email 5432tat@naver.com \
+--agree-tos \
+--no-eff-email
