@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    hostname: elasticsearch.smartseoapp.com
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      # 💡 개발/소규모 서버 환경에 맞춘 JVM 메모리 최적화 (필요 시 확장 가능)
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # 초기 테스트 편의성을 위해 기본 보안(HTTPS/비밀번호)을 잠시 비활성화합니다.
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - services
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.2
+    container_name: logstash
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    volumes:
+      # 💡 파이프라인 및 설정 파일을 호스트에서 쉽게 튜닝할 수 있도록 바인드 마운트
+      - ./logstash.yml:/usr/share/logstash/config/logstash.yml
+      - /storage/docker-storage/elk/logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5044:5044"   # Beats(Filebeat 등) 수집용 포트
+      - "50000:50000/tcp"
+      - "50000:50000/udp"
+    networks:
+      - services
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    container_name: kibana
+    restart: unless-stopped
+    hostname: kibana.smartseoapp.com
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - I18N_LOCALE=ko-KR # 💡 키바나 메뉴 한글화 셋팅
+    ports:
+      - "5601:5601"
+    networks:
+      - services
+
+volumes:
+  elasticsearch_data:
+    name: elasticsearch_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /storage/docker-storage/elk/elasticsearch/data
+
+networks:
+  services:
+    external: true
